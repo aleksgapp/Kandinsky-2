@@ -438,6 +438,8 @@ class Kandinsky2_1:
         sampler="ddim_sampler",
         prior_cf_scale=4,
         prior_steps="25",
+        negative_decoder_prompt="",
+        negative_prior_prompt="",
     ):
         # generate clip embeddings
         image_emb = self.generate_clip_emb(
@@ -446,7 +448,16 @@ class Kandinsky2_1:
             prior_cf_scale=prior_cf_scale,
             prior_steps=prior_steps,
         )
-        zero_image_emb = self.create_zero_img_emb(batch_size=batch_size)
+        if negative_decoder_prompt == "":
+            zero_image_emb = self.create_zero_img_emb(batch_size=batch_size)
+        else:
+            zero_image_emb = self.generate_clip_emb(
+                negative_decoder_prompt,
+                batch_size=batch_size,
+                prior_cf_scale=prior_cf_scale,
+                prior_steps=prior_steps,
+                negative_prior_prompt=negative_prior_prompt,
+            )
         image_emb = torch.cat([image_emb, zero_image_emb], dim=0).to(self.device)
         
         # load diffusion
